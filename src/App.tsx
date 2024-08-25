@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react'
 import { PDFDocument } from 'pdf-lib'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { BrainCog, FileText, Loader2 } from 'lucide-react'
 import PDFUpload from '@/components/PDFUpload'
 import PageSelector from '@/components/PageSelector'
 import PDFViewerDownloader from '@/components/PDFViewerDownloader'
+import StoryAndShare from '@/components/StoryAndShare'
 import {
   Card,
   CardContent,
@@ -15,7 +16,6 @@ import {
 } from '@/components/ui/card'
 
 const App: React.FC = () => {
-  const [originalPdf, setOriginalPdf] = useState<File | null>(null)
   const [pagesToExtract, setPagesToExtract] = useState<number[]>([])
   const [extractedPdfBlob, setExtractedPdfBlob] = useState<Blob | null>(null)
   const [originalPdfPagesCount, setOriginalPdfPagesCount] = useState<number>(0)
@@ -24,7 +24,6 @@ const App: React.FC = () => {
   const pdfDocRef = useRef<PDFDocument | null>(null)
 
   const handleFileUpload = (file: File) => {
-    setOriginalPdf(file)
     setLoading(true)
     setError('')
 
@@ -73,62 +72,73 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <div className="mx-auto py-6 max-w-full" style={{ width: '1200px' }}>
-        <Card>
-          <CardHeader>
-            <CardTitle>PDF Page Extractor</CardTitle>
-            <CardDescription>
-              Upload a PDF to extract specific pages.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PDFUpload onFileUpload={handleFileUpload} />
-            {loading ? (
-              <Loader2 className="animate-spin" />
-            ) : error ? (
-              <p>{error}</p>
-            ) : (
-              <CardDescription className="mb-4 mt-2">
-                {originalPdfPagesCount
-                  ? `This PDF has ${originalPdfPagesCount} pages.`
-                  : 'Please upload a PDF to get started.'}
+      <div className="p-2">
+        <div className="mx-auto py-6 max-w-full" style={{ width: '1200px' }}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BrainCog />
+                PDF Page Extractor
+              </CardTitle>
+              <CardDescription className="flex item-center gap-2">
+                Upload a PDF to extract specific pages.
               </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PDFUpload onFileUpload={handleFileUpload} />
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : error ? (
+                <p>{error}</p>
+              ) : (
+                <CardDescription className="mb-4 mt-2 flex item-center gap-2">
+                  {originalPdfPagesCount ? (
+                    `This PDF has ${originalPdfPagesCount} pages.`
+                  ) : (
+                    <>Please upload a PDF to get started.</>
+                  )}
+                </CardDescription>
+              )}
+              <PageSelector
+                onPageNumbersEntered={handlePageNumbersEntered}
+                disabled={!originalPdfPagesCount}
+              />
+              <Button
+                className="mt-4"
+                onClick={generateExtractedPDF}
+                disabled={
+                  !originalPdfPagesCount || !pagesToExtract.length || loading
+                }
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin mr-2" />
+                ) : (
+                  <FileText className="mr-2" />
+                )}
+                Generate PDF
+              </Button>
+            </CardContent>
+            {extractedPdfBlob && (
+              <div>
+                <CardHeader>
+                  <CardTitle>Extracted PDF Preview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PDFViewerDownloader pdfBlob={extractedPdfBlob} />
+                </CardContent>
+                <CardFooter>
+                  <p>
+                    Download your extracted PDF or use the preview window to
+                    review it before saving.
+                  </p>
+                </CardFooter>
+              </div>
             )}
-            <PageSelector
-              onPageNumbersEntered={handlePageNumbersEntered}
-              disabled={!originalPdfPagesCount}
-            />
-            <Button
-              className="mt-4"
-              onClick={generateExtractedPDF}
-              disabled={
-                !originalPdfPagesCount || !pagesToExtract.length || loading
-              }
-            >
-              {loading && <Loader2 className="animate-spin mr-2" />}
-              Generate PDF
-            </Button>
-          </CardContent>
-          {extractedPdfBlob && (
-            <div>
-              <CardHeader>
-                <CardTitle>Extracted PDF Preview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PDFViewerDownloader pdfBlob={extractedPdfBlob} />
-              </CardContent>
-              <CardFooter>
-                <p>
-                  Download your extracted PDF or use the preview window to
-                  review it before saving.
-                </p>
-              </CardFooter>
-            </div>
-          )}
-          <CardFooter>
-            <p>Like it? Share it! </p>
-          </CardFooter>
-        </Card>
+            <CardFooter>
+              <StoryAndShare />
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   )

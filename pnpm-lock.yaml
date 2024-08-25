@@ -35,6 +35,9 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
+      react-github-btn:
+        specifier: ^1.4.0
+        version: 1.4.0(react@18.3.1)
       tailwindcss-animate:
         specifier: ^1.0.6
         version: 1.0.7(tailwindcss@3.4.10)
@@ -902,6 +905,9 @@ packages:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
 
+  github-buttons@2.29.0:
+    resolution: {integrity: sha512-ZXVqIXNmER7ArdJO8y8dy/vko9XC05Pci+8Gtx0DbcdsUSiJ5NG2oT/mrEHHl+PzR0YYlj+tQgYn6Hg9S8tT0A==}
+
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
     engines: {node: '>= 6'}
@@ -1363,6 +1369,11 @@ packages:
     resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
     peerDependencies:
       react: ^18.3.1
+
+  react-github-btn@1.4.0:
+    resolution: {integrity: sha512-lV4FYClAfjWnBfv0iNlJUGhamDgIq6TayD0kPZED6VzHWdpcHmPfsYOZ/CFwLfPv4Zp+F4m8QKTj0oy2HjiGXg==}
+    peerDependencies:
+      react: '>=16.3.0'
 
   react-refresh@0.14.2:
     resolution: {integrity: sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==}
@@ -2517,6 +2528,8 @@ snapshots:
 
   gensync@1.0.0-beta.2: {}
 
+  github-buttons@2.29.0: {}
+
   glob-parent@5.1.2:
     dependencies:
       is-glob: 4.0.3
@@ -2887,6 +2900,11 @@ snapshots:
       loose-envify: 1.4.0
       react: 18.3.1
       scheduler: 0.23.2
+
+  react-github-btn@1.4.0(react@18.3.1):
+    dependencies:
+      github-buttons: 2.29.0
+      react: 18.3.1
 
   react-refresh@0.14.2: {}
 
