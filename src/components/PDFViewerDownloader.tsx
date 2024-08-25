@@ -1,40 +1,62 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from 'react'
+import { Worker, Viewer } from '@react-pdf-viewer/core'
+import '@react-pdf-viewer/core/lib/styles/index.css'
+import { Button } from '@/components/ui/button'
 
 interface PDFViewerDownloaderProps {
-    pdfBlob: Blob;
+  pdfBlob: Blob
 }
 
-const PDFViewerDownloader: React.FC<PDFViewerDownloaderProps> = ({ pdfBlob }) => {
-    const [url, setUrl] = useState<string | null>(null);
+const PDFViewerDownloader: React.FC<PDFViewerDownloaderProps> = ({
+  pdfBlob,
+}) => {
+  const [url, setUrl] = useState<string | null>(null)
 
-    useEffect(() => {
-        if (pdfBlob) {
-            const newUrl = URL.createObjectURL(pdfBlob);
-            setUrl(newUrl);
-            return () => {
-                URL.revokeObjectURL(newUrl); // Clean up the object URL on unmount
-            };
-        }
-    }, [pdfBlob]);
+  useEffect(() => {
+    // This effect handles the creation and cleanup of the URL object
+    let objectUrl: string | null = null
 
-    if (!url) {
-        return <div>Loading PDF...</div>;
+    if (pdfBlob) {
+      objectUrl = URL.createObjectURL(pdfBlob)
+      setUrl(objectUrl)
     }
 
-    return (
-        <div>
-            <iframe src={url} style={{ width: '100%', height: '500px', border: 'none' }} title="PDF Preview"></iframe>
-            <Button as="a" href={url} download="extracted_pages.pdf" style={{ marginTop: '10px' }}>
-                Download PDF
-            </Button>
-            {url && (
-                <div>
-                    <p>Can't view the PDF? <a href={url} download="extracted_pages.pdf">Click here to download.</a></p>
-                </div>
-            )}
-        </div>
-    );
-};
+    // Cleanup function to revoke the URL when the component unmounts or the blob changes
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl)
+      }
+    }
+  }, [pdfBlob])
 
-export default PDFViewerDownloader;
+  if (!url) {
+    return <div>Loading PDF...</div>
+  }
+
+  return (
+    <div>
+      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+        <div style={{ height: '500px' }}>
+          <Viewer fileUrl={url} />
+        </div>
+      </Worker>
+      <Button
+        as="a"
+        // on click, download the pdf file
+        onClick={() => {
+          const link = document.createElement('a')
+          link.href = url
+          link.setAttribute('download', 'extracted_pages.pdf')
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }}
+        style={{ marginTop: '10px' }}
+      >
+        Download PDF
+      </Button>
+    </div>
+  )
+}
+
+export default PDFViewerDownloader
