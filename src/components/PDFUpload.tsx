@@ -8,7 +8,7 @@ interface PDFUploadProps {
 
 const PDFUpload: React.FC<PDFUploadProps> = ({ onFileUpload }) => {
   return (
-    <div className="mb-4">
+    <div className="max-w-[400px]">
       <Label htmlFor="pdf-upload" className="">
         Upload your PDF file:
       </Label>

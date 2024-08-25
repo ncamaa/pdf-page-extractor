@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { PDFDocument } from 'pdf-lib'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Loader2 } from 'lucide-react'
 import PDFUpload from '@/components/PDFUpload'
 import PageSelector from '@/components/PageSelector'
 import PDFViewerDownloader from '@/components/PDFViewerDownloader'
@@ -19,20 +19,29 @@ const App: React.FC = () => {
   const [pagesToExtract, setPagesToExtract] = useState<number[]>([])
   const [extractedPdfBlob, setExtractedPdfBlob] = useState<Blob | null>(null)
   const [originalPdfPagesCount, setOriginalPdfPagesCount] = useState<number>(0)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
+  const pdfDocRef = useRef<PDFDocument | null>(null)
 
   const handleFileUpload = (file: File) => {
     setOriginalPdf(file)
+    setLoading(true)
+    setError('')
 
     const fileReader = new FileReader()
     fileReader.onload = async (e) => {
       const arrayBuffer = e.target?.result as ArrayBuffer
       try {
         const pdfDoc = await PDFDocument.load(arrayBuffer)
+        pdfDocRef.current = pdfDoc // Store reference to loaded PDF
         const numberOfPages = pdfDoc.getPageCount()
-        setOriginalPdfPagesCount(numberOfPages) // Set the number of pages in state
+        setOriginalPdfPagesCount(numberOfPages)
       } catch (error) {
         console.error('Error loading PDF:', error)
-        setOriginalPdfPagesCount(0) // Reset the page count on error
+        setError('Failed to load PDF. Please try a different file.')
+        setOriginalPdfPagesCount(0)
+      } finally {
+        setLoading(false)
       }
     }
     fileReader.readAsArrayBuffer(file)
@@ -43,31 +52,23 @@ const App: React.FC = () => {
   }
 
   const generateExtractedPDF = async () => {
-    if (!originalPdf) return
+    if (!pdfDocRef.current || !pagesToExtract.length) return
 
-    const fileReader = new FileReader()
-    fileReader.onload = async (e) => {
-      const arrayBuffer = e.target?.result as ArrayBuffer
-      const pdfDoc = await PDFDocument.load(arrayBuffer)
-      const newPdfDoc = await PDFDocument.create()
+    setLoading(true)
+    const newPdfDoc = await PDFDocument.create()
+    const validPages = pagesToExtract.filter(
+      (page) => page <= originalPdfPagesCount && page > 0
+    )
 
-      // Ensure page numbers are within the document range
-      const maxPages = pdfDoc.getPageCount()
-      const validPages = pagesToExtract.filter(
-        (page) => page <= maxPages && page > 0
-      )
+    const copiedPages = await newPdfDoc.copyPages(
+      pdfDocRef.current,
+      validPages.map((page) => page - 1)
+    )
+    copiedPages.forEach((page) => newPdfDoc.addPage(page))
 
-      // Copy pages to a new document
-      const copiedPages = await newPdfDoc.copyPages(
-        pdfDoc,
-        validPages.map((page) => page - 1)
-      )
-      copiedPages.forEach((page) => newPdfDoc.addPage(page))
-
-      const pdfBytes = await newPdfDoc.save()
-      setExtractedPdfBlob(new Blob([pdfBytes], { type: 'application/pdf' }))
-    }
-    fileReader.readAsArrayBuffer(originalPdf)
+    const pdfBytes = await newPdfDoc.save()
+    setExtractedPdfBlob(new Blob([pdfBytes], { type: 'application/pdf' }))
+    setLoading(false)
   }
 
   return (
@@ -82,13 +83,31 @@ const App: React.FC = () => {
           </CardHeader>
           <CardContent>
             <PDFUpload onFileUpload={handleFileUpload} />
-            <CardDescription>
-              {originalPdfPagesCount
-                ? `This PDF has ${originalPdfPagesCount} pages.`
-                : 'Please upload a PDF to get started.'}
-            </CardDescription>
-            <PageSelector onPageNumbersEntered={handlePageNumbersEntered} />
-            <Button onClick={generateExtractedPDF}>Generate PDF</Button>
+            {loading ? (
+              <Loader2 className="animate-spin" />
+            ) : error ? (
+              <p>{error}</p>
+            ) : (
+              <CardDescription className="mb-4 mt-2">
+                {originalPdfPagesCount
+                  ? `This PDF has ${originalPdfPagesCount} pages.`
+                  : 'Please upload a PDF to get started.'}
+              </CardDescription>
+            )}
+            <PageSelector
+              onPageNumbersEntered={handlePageNumbersEntered}
+              disabled={!originalPdfPagesCount}
+            />
+            <Button
+              className="mt-4"
+              onClick={generateExtractedPDF}
+              disabled={
+                !originalPdfPagesCount || !pagesToExtract.length || loading
+              }
+            >
+              {loading && <Loader2 className="animate-spin mr-2" />}
+              Generate PDF
+            </Button>
           </CardContent>
           {extractedPdfBlob && (
             <div>
@@ -107,9 +126,7 @@ const App: React.FC = () => {
             </div>
           )}
           <CardFooter>
-            <p>
-              Ensure your PDFs are exactly as needed with our extraction tool.
-            </p>
+            <p>Like it? Share it! </p>
           </CardFooter>
         </Card>
       </div>
