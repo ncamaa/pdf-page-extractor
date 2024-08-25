@@ -41,7 +41,6 @@ const PDFViewerDownloader: React.FC<PDFViewerDownloaderProps> = ({
         </div>
       </Worker>
       <Button
-        as="a"
         // on click, download the pdf file
         onClick={() => {
           const link = document.createElement('a')

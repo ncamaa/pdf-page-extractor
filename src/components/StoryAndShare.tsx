@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button' // Ensure this import path matches your project structure
 import { Download, Share2, BookOpen } from 'lucide-react'
 import GitHubButton from 'react-github-btn'
@@ -53,11 +53,9 @@ const StoryAndShare = () => {
       </p>
       <div className="flex items-center space-x-4 mb-4">
         <Button
-          as="a"
           onClick={() => {
             window.open('/songs.pdf', '_blank')
           }}
-          target="_blank"
           rel="noopener noreferrer"
           className="flex items-center"
         >

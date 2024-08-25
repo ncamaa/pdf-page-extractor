@@ -5,10 +5,12 @@ import { FileDigit } from 'lucide-react'
 
 interface PageSelectorProps {
   onPageNumbersEntered: (pages: number[]) => void
+  disabled?: boolean
 }
 
 const PageSelector: React.FC<PageSelectorProps> = ({
   onPageNumbersEntered,
+  disabled,
 }) => {
   return (
     <div>
@@ -21,6 +23,7 @@ const PageSelector: React.FC<PageSelectorProps> = ({
         id="page-selector"
         type="text"
         placeholder="e.g., 1,5,7"
+        disabled={disabled}
         onChange={(e) => {
           const pages = e.target.value
             .split(',')
