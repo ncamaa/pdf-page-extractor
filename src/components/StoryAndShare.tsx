@@ -75,7 +75,7 @@ const StoryAndShare = () => {
           data-size="large"
           aria-label="Star buttons/github-buttons on GitHub"
         >
-          Star
+          `` Star
         </GitHubButton>
       </div>
     </div>
