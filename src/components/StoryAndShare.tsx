@@ -69,13 +69,13 @@ const StoryAndShare = () => {
       </div>
       <div>
         <GitHubButton
-          href="https://github.com/buttons/github-buttons"
+          href="https://github.com/ncamaa/pdf-page-extractor"
           data-color-scheme="no-preference: dark; light: light; dark: dark;"
           data-icon="octicon-star"
           data-size="large"
-          aria-label="Star buttons/github-buttons on GitHub"
+          aria-label="Star ncamaa/pdf-page-extractor on GitHub"
         >
-          `` Star
+          Star
         </GitHubButton>
       </div>
     </div>
