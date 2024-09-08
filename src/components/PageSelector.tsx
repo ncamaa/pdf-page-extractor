@@ -1,5 +1,6 @@
 import React from 'react'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { FileDigit } from 'lucide-react'
 
@@ -19,17 +20,13 @@ const PageSelector: React.FC<PageSelectorProps> = ({
         Enter page numbers (comma-separated):
       </Label>
 
-      <Input
+      <Textarea
         id="page-selector"
         type="text"
-        placeholder="e.g., 1,5,7"
+        placeholder="e.g., 1, 5, 7"
         disabled={disabled}
         onChange={(e) => {
-          const pages = e.target.value
-            .split(',')
-            .map(Number)
-            .filter((num) => !isNaN(num) && num > 0)
-          onPageNumbersEntered(pages)
+          onPageNumbersEntered(e)
         }}
       />
     </div>

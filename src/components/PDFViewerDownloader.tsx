@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Worker, Viewer } from '@react-pdf-viewer/core'
 import '@react-pdf-viewer/core/lib/styles/index.css'
 import { Button } from '@/components/ui/button'
+import { Download } from 'lucide-react'
 
 interface PDFViewerDownloaderProps {
   pdfBlob: Blob
@@ -50,8 +51,9 @@ const PDFViewerDownloader: React.FC<PDFViewerDownloaderProps> = ({
           link.click()
           document.body.removeChild(link)
         }}
-        style={{ marginTop: '10px' }}
+        className="mt-4 flex items-center gap-2"
       >
+        <Download />
         Download PDF
       </Button>
     </div>

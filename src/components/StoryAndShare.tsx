@@ -51,7 +51,7 @@ const StoryAndShare = () => {
         very long songbook filled with chords for guitar 🎸. Use this tool to
         create a PDF of your favorite pages from any lengthy PDF
       </p>
-      <div className="flex items-center space-x-4 mb-4">
+      <div className="flex items-center space-x-4 my-4">
         <Button
           onClick={() => {
             window.open('/songs.pdf', '_blank')
