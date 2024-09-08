@@ -19,7 +19,10 @@ const PageSelector: React.FC<PageSelectorProps> = ({
         <FileDigit />
         Enter page numbers (comma-separated):
       </Label>
-
+      <small className="text-muted-foreground">
+        Separate page numbers with commas. For example: "1, 5, 7". Only positive
+        numbers. Only digits and commas. All other characters will be ignored.
+      </small>
       <Textarea
         id="page-selector"
         type="text"

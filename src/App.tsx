@@ -106,7 +106,7 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Error parsing page numbers:', error)
       setIsPagesInputError(true)
-      setPagesInputError('Invalid page numbers entered.')
+      setPagesInputError(error.message || 'Invalid page numbers entered.')
     }
     setPagesToExtract(pages)
   }
@@ -137,7 +137,7 @@ const App: React.FC = () => {
       setExtractedPdfBlob(new Blob([pdfBytes], { type: 'application/pdf' }))
       setLoading(false)
     } catch (error) {
-      console.error('Error generating PDF 123:', error)
+      console.error('Error generating PDF:', error)
       setIsGenerationError(true)
       setGenerationError('Failed to generate PDF. Please try again.')
       console.log(generationError)
@@ -193,7 +193,8 @@ const App: React.FC = () => {
               ) : amountOfPagesSelected ? (
                 <p className="text-green-500 flex items-center gap-2 my-2">
                   <CheckCircleIcon />
-                  {amountOfPagesSelected} page(s) selected for extraction.
+                  {amountOfPagesSelected} page{amountOfPagesSelected > 1 && 's'}{' '}
+                  selected for extraction.
                 </p>
               ) : null}
               <Button
@@ -208,7 +209,7 @@ const App: React.FC = () => {
                 ) : (
                   <FileText className="mr-2" />
                 )}
-                Generate PDF 1
+                Generate PDF
               </Button>
               {isGenerationError ? (
                 <p className="text-red-500 flex items-center gap-2 my-2">
@@ -221,7 +222,7 @@ const App: React.FC = () => {
             {extractedPdfBlob && (
               <div>
                 <CardHeader>
-                  <CardTitle>Extracted PDF Preview {page}</CardTitle>
+                  <CardTitle>Extracted PDF Preview</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <PDFViewerDownloader pdfBlob={extractedPdfBlob} />
