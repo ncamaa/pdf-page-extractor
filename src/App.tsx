@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect, ChangeEvent } from 'react'
 import { PDFDocument } from 'pdf-lib'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,6 +20,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
+
+const SHOW_PAGE_ARRANGEMENT_RADIO = false // To be implemented later. Algorithm for booklet arrangement is not yet complete.
 
 const App: React.FC = () => {
   const [pagesToExtract, setPagesToExtract] = useState<number[]>([])
@@ -34,6 +38,7 @@ const App: React.FC = () => {
   const [isGenerationError, setIsGenerationError] = useState<boolean>(false)
   const [pagesInputError, setPagesInputError] = useState<string>('')
   const [isPagesInputError, setIsPagesInputError] = useState<boolean>(false)
+  const [printOrder, setPrintOrder] = useState<'normal' | 'booklet'>('normal')
   const pdfDocRef = useRef<PDFDocument | null>(null)
 
   const handleFileUpload = (file: File) => {
@@ -60,8 +65,8 @@ const App: React.FC = () => {
     fileReader.readAsArrayBuffer(file)
   }
 
-  const handlePageNumbersEntered = (e: InputEvent) => {
-    const { value } = e.target as HTMLInputElement
+  const handlePageNumbersEntered = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const { value } = e.target as HTMLTextAreaElement
     if (!value) {
       setPagesToExtract([])
       setAmountOfPagesSelected(0)
@@ -70,9 +75,7 @@ const App: React.FC = () => {
     }
     let pages: number[] = []
     try {
-      // remove spaces and all non-digit characters besides commas
       const sanitizedValue = value.replace(/[^\d,]/g, '')
-      // split by commas and convert to numbers
       pages = sanitizedValue
         .split(',')
         .map((page) => parseInt(page, 10))
@@ -88,34 +91,54 @@ const App: React.FC = () => {
           'You cannot extract more pages than the original PDF has.'
         )
       }
-      // ensure that none of the numbers are negative
       if (pages.some((page) => page <= 0)) {
         throw new Error('Page numbers must be positive integers.')
       }
-      // ensure that none of the numbers is greater than the total number of pages
-      if (pages.some((page) => page > originalPdfPagesCount)) {
+      if (pages.some((page) => page > originalPdfPagesCount))
         throw new Error(
           'Page numbers must not exceed the total number of pages in the PDF.'
         )
-      }
-      // array unique
       pages = Array.from(new Set(pages))
-      console.log(pages)
       setAmountOfPagesSelected(pages.length)
       setIsPagesInputError(false)
     } catch (error) {
       console.error('Error parsing page numbers:', error)
       setIsPagesInputError(true)
-      setPagesInputError(error.message || 'Invalid page numbers entered.')
+      let message = 'Invalid page numbers entered.'
+      if (error && typeof error.hasOwnProperty('message')) {
+        message = (error as Error).message
+      }
+      setPagesInputError(message)
     }
     setPagesToExtract(pages)
   }
 
+  const rearrangePagesForBooklet = (
+    pages: number[],
+    totalPages: number
+  ): number[] => {
+    // Ensure the total pages is a multiple of 4 by adding blank pages if necessary
+    const paddedTotalPages =
+      totalPages % 4 === 0 ? totalPages : totalPages + (4 - (totalPages % 4))
+    let bookletPages: number[] = []
+    const totalPairs = paddedTotalPages / 4
+
+    for (let i = 0; i < totalPairs; i++) {
+      const left = paddedTotalPages - (2 * i + 1)
+      const right = 2 * i
+
+      if (left < totalPages) bookletPages.push(left + 1)
+      if (right < totalPages) bookletPages.push(right + 1)
+      if (right + 1 < totalPages) bookletPages.push(right + 2)
+      if (left - 1 < totalPages && left - 1 >= 0) bookletPages.push(left)
+    }
+
+    return bookletPages.filter((page) => pages.includes(page))
+  }
+
   const generateExtractedPDF = async () => {
     try {
-      console.log({ pdfDocRef, pagesToExtract })
       if (!pdfDocRef.current || !pagesToExtract.length) {
-        console.log({ pdfDocRef, pagesToExtract })
         setGenerationError('No PDF loaded or no pages selected.')
         setIsGenerationError(true)
         return
@@ -123,9 +146,13 @@ const App: React.FC = () => {
 
       setLoading(true)
       const newPdfDoc = await PDFDocument.create()
-      const validPages = pagesToExtract.filter(
+      let validPages = pagesToExtract.filter(
         (page) => page <= originalPdfPagesCount && page > 0
       )
+
+      if (printOrder === 'booklet') {
+        validPages = rearrangePagesForBooklet(validPages, originalPdfPagesCount)
+      }
 
       const copiedPages = await newPdfDoc.copyPages(
         pdfDocRef.current,
@@ -140,10 +167,15 @@ const App: React.FC = () => {
       console.error('Error generating PDF:', error)
       setIsGenerationError(true)
       setGenerationError('Failed to generate PDF. Please try again.')
-      console.log(generationError)
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (extractedPdfBlob) {
+      generateExtractedPDF()
+    }
+  }, [printOrder])
 
   return (
     <div className="App">
@@ -197,6 +229,23 @@ const App: React.FC = () => {
                   selected for extraction.
                 </p>
               ) : null}
+              {SHOW_PAGE_ARRANGEMENT_RADIO && (
+                <RadioGroup
+                  value={printOrder}
+                  onValueChange={(value: 'normal' | 'booklet') =>
+                    setPrintOrder(value)
+                  }
+                  className="flex items-center gap-4 mt-4"
+                >
+                  <Label htmlFor="normal">
+                    <RadioGroupItem value="normal" id="normal" /> Normal Order
+                  </Label>
+                  <Label htmlFor="booklet">
+                    <RadioGroupItem value="booklet" id="booklet" /> Booklet
+                    Order
+                  </Label>
+                </RadioGroup>
+              )}
               <Button
                 className="mt-6"
                 onClick={generateExtractedPDF}
@@ -214,7 +263,6 @@ const App: React.FC = () => {
               {isGenerationError ? (
                 <p className="text-red-500 flex items-center gap-2 my-2">
                   <XCircle />
-                  ?!@?!@#
                   {generationError}
                 </p>
               ) : null}

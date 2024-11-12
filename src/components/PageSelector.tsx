@@ -1,11 +1,10 @@
-import React from 'react'
-import { Input } from '@/components/ui/input'
+import React, { ChangeEvent } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { FileDigit } from 'lucide-react'
 
 interface PageSelectorProps {
-  onPageNumbersEntered: (pages: number[]) => void
+  onPageNumbersEntered: (e: ChangeEvent<HTMLTextAreaElement>) => void
   disabled?: boolean
 }
 
@@ -25,7 +24,6 @@ const PageSelector: React.FC<PageSelectorProps> = ({
       </small>
       <Textarea
         id="page-selector"
-        type="text"
         placeholder="e.g., 1, 5, 7"
         disabled={disabled}
         onChange={(e) => {
