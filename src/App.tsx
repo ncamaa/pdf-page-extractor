@@ -94,10 +94,9 @@ const App: React.FC = () => {
       if (pages.some((page) => page <= 0)) {
         throw new Error('Page numbers must be positive integers.')
       }
-      if (pages.some((page) => page > originalPdfPagesCount))
-        throw new Error(
-          'Page numbers must not exceed the total number of pages in the PDF.'
-        )
+      // if (pages.some((page) => page > originalPdfPagesCount)) {
+      //   console.log('Page numbers:', pages)
+      // }
       pages = Array.from(new Set(pages))
       setAmountOfPagesSelected(pages.length)
       setIsPagesInputError(false)
@@ -105,9 +104,8 @@ const App: React.FC = () => {
       console.error('Error parsing page numbers:', error)
       setIsPagesInputError(true)
       let message = 'Invalid page numbers entered.'
-      if (error && typeof error.hasOwnProperty('message')) {
-        message = (error as Error).message
-      }
+      if ((error as Error).message) message = (error as Error).message
+
       setPagesInputError(message)
     }
     setPagesToExtract(pages)
@@ -120,7 +118,7 @@ const App: React.FC = () => {
     // Ensure the total pages is a multiple of 4 by adding blank pages if necessary
     const paddedTotalPages =
       totalPages % 4 === 0 ? totalPages : totalPages + (4 - (totalPages % 4))
-    let bookletPages: number[] = []
+    const bookletPages: number[] = []
     const totalPairs = paddedTotalPages / 4
 
     for (let i = 0; i < totalPairs; i++) {
