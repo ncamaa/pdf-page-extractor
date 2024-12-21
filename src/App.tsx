@@ -94,9 +94,10 @@ const App: React.FC = () => {
       if (pages.some((page) => page <= 0)) {
         throw new Error('Page numbers must be positive integers.')
       }
-      // if (pages.some((page) => page > originalPdfPagesCount)) {
-      //   console.log('Page numbers:', pages)
-      // }
+      // if (pages.some((page) => page > originalPdfPagesCount))
+      //   throw new Error(
+      //     'Page numbers must not exceed the total number of pages in the PDF.'
+      //   )
       pages = Array.from(new Set(pages))
       setAmountOfPagesSelected(pages.length)
       setIsPagesInputError(false)
